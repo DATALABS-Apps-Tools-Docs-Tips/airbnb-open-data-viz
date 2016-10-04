@@ -1,7 +1,13 @@
 import numpy as np
 import airpy as ap
 from bokeh.plotting import figure, output_file, show
-from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.models import ColumnDataSource, HoverTool, Div
+from bokeh.layouts import layout, widgetbox
+from bokeh.io import curdoc
+from os.path import dirname, join
+
+# Header Page
+header = Div(text = open(join(dirname(__file__), "description.html")).read(), width = 1600)
 
 # Data Processing
 data = ap.presto("SELECT DISTINCT dim_location, lat, long, searches, viewers, contacts, requests FROM robert.local_demand_index WHERE ds_night = '2016-10-10';")
@@ -17,7 +23,7 @@ colors = ["#%02x%02x%02x" % (int(s*100), int(s*100), 150) for s in data['searche
 
 
 # output to static HTML file (with CDN resources)
-output_file("local_demand_index.html", title = "Local Demand Index", mode = "cdn")
+# output_file("local_demand_index.html", title = "Local Demand Index", mode = "cdn")
 
 TOOLS = "resize, crosshair, pan, wheel_zoom, box_zoom, reset, box_select, lasso_select, hover"
 
@@ -40,4 +46,13 @@ p.select_one(HoverTool).tooltips = [
         ]
 
 # show the results
-show(p)
+# show(p)
+
+l = layout([
+    [header],
+    [p],
+])
+
+show(l)
+# curdoc().add_root(l)
+# curdoc().title = "Supply and Demand Index"
