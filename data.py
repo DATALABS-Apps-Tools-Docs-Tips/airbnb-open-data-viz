@@ -3,7 +3,7 @@ import airpy as ap
 import pandas as pd
 from bokeh.models import ColumnDataSource
 
-def process_data():
+def process_data(end_date):
     """The main function to query data from demand index table"""
 
     query = '''
@@ -25,7 +25,7 @@ def process_data():
         robert.local_demand_index 
     WHERE
         ds_night >= '2016-10-01' AND 
-        ds_night <= '2017-01-01'
+        ds_night <= '{end_date}'
     ) ldi
     JOIN core_data.dim_markets dm
     ON (ldi.dim_market = dm.dim_market)
@@ -34,14 +34,10 @@ def process_data():
     WHERE
         dm.ds = '2016-10-01'
     ;
-    '''
+    '''.format(end_date = end_date)
 
     data = ap.presto(query)
-
-    data['ds_year'] = data['ds_night'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d').year)
-    data['ds_month'] = data['ds_night'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d').month)
-    data['ds_day'] = data['ds_night'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d').day)
-    data.sort_values(['dim_location', 'ds_night'], inplace = True)
+    
     data['searches'] = 100000 * data['searches']
 
     sources = {}
@@ -54,7 +50,12 @@ def process_data():
 
     source = sources.get(0, None)
     zip_date_ranges = zip(range(len(date_ranges) + 1), date_ranges)
+    countries_list = data.dim_country_name.unique().tolist()
 
     print "Finished processing ... "
 
-    return zip_date_ranges, source, sources
+    return zip_date_ranges, countries_list, source, sources
+
+if __name__ == "__main__":
+    print "[data.py] is being run independently"
+

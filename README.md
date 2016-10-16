@@ -11,7 +11,7 @@
     * Add dim country level color coding
     * Add a video to playback the demand index day-by-day
         * the Big label is not aligned correctly
-        * Country color coding 
-        * Stop button doesn't seem to work
+        * ~~Country color coding~~
+        * ~~Stop button doesn't seem to work~~
         * stress test more data
     * Annotate time series by major events
