@@ -1,3 +1,4 @@
+import numpy as np
 from bokeh.io import curdoc
 from bokeh.layouts import layout, widgetbox
 from bokeh.plotting import figure, output_file, show
@@ -12,11 +13,14 @@ from bokeh.models.glyphs import Circle
 from bokeh.models.widgets import Slider, TextInput, Select, Button
 from bokeh.palettes import Viridis
 from os.path import dirname, join
-from data import process_data
+from data import process_map_data, process_ts_data
 
-zip_date_ranges, countries_list, source, sources = process_data(end_date = '2016-10-10')
+zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-10-10')
+
 START_IDX = zip_date_ranges[0][0]
 END_IDX = zip_date_ranges[-1][0]
+
+markets_list, ts_source, ts_sources = process_ts_data(end_date = '2017-01-01')
 
 # --------------------------------- # 
 #         Map Configuration         #
@@ -36,8 +40,9 @@ plot = GMapPlot(
     plot_height = 1200,
     api_key = API_KEY,
 )
-
-color_mapper = CategoricalColorMapper(palette = Viridis.get(256, None), factors = countries_list)
+palette = Viridis.get(256, None)
+palette = [palette[i] for i in np.random.randint(1, 256, 168)]
+color_mapper = CategoricalColorMapper(palette = palette, factors = countries_list)
 circles = Circle(x = "long", 
                  y = "lat", 
                  radius = "searches", 
@@ -59,7 +64,7 @@ hover = HoverTool(
 plot.add_tools(PanTool(), WheelZoomTool(), hover, BoxZoomTool())
 
 # --------------------------------- # 
-#            Interaction            #
+#     Map Animation Interaction     #
 # --------------------------------- #
 
 def animate_update():
@@ -89,14 +94,45 @@ def animate():
 button = Button(label= '► Play', width = 60)
 button.on_click(animate)
 
+# --------------------------------- # 
+#     Time Series Configuration     #
+# --------------------------------- #
+ts_figure = figure(webgl = True, width = 1600, height = 400, x_axis_type = "datetime", title = "Demand Index")
+ts_figure.circle('ds_night', 'searches_index', color = 'navy', legend = 'Demand Index', source = ts_source)
+ts_figure.line('ds_night', 'searches_index', color = 'navy', legend = 'Demand Index', source = ts_source)
 
-# Layout
+ts_hover = HoverTool(
+            tooltips = [
+                ("Check-in Date", "@ds_night"),
+            ]
+        )
+
+ts_figure.add_tools(ts_hover)
+
+
+# --------------------------------- # 
+#      Time Series Interaction      #
+# --------------------------------- #
+market_selector = Select(title = "Market", value = "Los Angeles", options = markets_list)
+
+def market_selector_update(attrname, old, new):
+    market = market_selector.value
+    ts_source.data = ts_sources[market].data
+
+market_selector.on_change('value', market_selector_update)
+
+
+# --------------------------------- # 
+#            Final Layout           #
+# --------------------------------- #
 header = Div(text = open(join(dirname(__file__), "description.html")).read(), width = 1600)
 
 layout = layout([
     [header],
     [plot],
-    [button]
+    [button],
+    [market_selector],
+    [ts_figure]
 ])
 
 curdoc().add_root(layout)

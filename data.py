@@ -3,8 +3,8 @@ import airpy as ap
 import pandas as pd
 from bokeh.models import ColumnDataSource
 
-def process_data(end_date):
-    """The main function to query data from demand index table"""
+def process_map_data(end_date):
+    """The main function to query data for map viz"""
 
     query = '''
     SELECT
@@ -52,9 +52,42 @@ def process_data(end_date):
     zip_date_ranges = zip(range(len(date_ranges) + 1), date_ranges)
     countries_list = data.dim_country_name.unique().tolist()
 
-    print "Finished processing ... "
+    print "Finished processing [map data] ... "
 
     return zip_date_ranges, countries_list, source, sources
+
+def process_ts_data(end_date):
+    """The main function to query data for time series viz"""
+
+    query = '''
+    SELECT 
+        * 
+    FROM 
+        pricing.market_demand_index
+    WHERE
+        ds_night >= '2016-10-01' AND 
+        ds_night <= '{end_date}' AND
+        ds = '2016-10-15'
+    ;
+    '''.format(end_date = end_date)
+
+    ts_data = ap.presto(query)
+    ts_data['ds_night'] = ts_data['ds_night'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+    ts_data.sort_values(['dim_location', 'ds_night'], inplace = True)
+
+    ts_sources = {}
+    markets_list = ts_data.dim_location.unique().tolist()
+    
+    for market in markets_list:
+        data_for_market = ts_data.loc[ts_data.dim_location == market, :]
+        ts_sources[market] = ColumnDataSource(data_for_market)
+
+    ts_source = ts_sources.get('Los Angeles', None)
+
+    print "Finished processing [ts data] ... "
+    print "{min_date} and {max_date}".format(min_date = ts_data.ds_night.min(), max_date = ts_data.ds_night.max())
+
+    return markets_list, ts_source, ts_sources
 
 if __name__ == "__main__":
     print "[data.py] is being run independently"
