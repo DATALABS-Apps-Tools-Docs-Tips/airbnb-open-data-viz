@@ -77,7 +77,7 @@ def process_ts_data(end_date):
 
     ts_sources = {}
     markets_list = ts_data.dim_location.unique().tolist()
-    
+
     for market in markets_list:
         data_for_market = ts_data.loc[ts_data.dim_location == market, :]
         ts_sources[market] = ColumnDataSource(data_for_market)
@@ -85,9 +85,17 @@ def process_ts_data(end_date):
     ts_source = ts_sources.get('Los Angeles', None)
 
     print "Finished processing [ts data] ... "
-    print "{min_date} and {max_date}".format(min_date = ts_data.ds_night.min(), max_date = ts_data.ds_night.max())
 
     return markets_list, ts_source, ts_sources
+
+def load_events():
+    events = pd.read_csv('events.csv')
+    events['date'] = pd.to_datetime(events.date)
+    events['date'] = events.date + pd.Timedelta(365, unit = 'd') # cheat for now
+    events.columns = ['idx', 'date', 'event', 'city']
+    events['y'] = 0.7
+    events.drop(['idx'], axis = 1, inplace = True)
+    return ColumnDataSource(events)
 
 if __name__ == "__main__":
     print "[data.py] is being run independently"
