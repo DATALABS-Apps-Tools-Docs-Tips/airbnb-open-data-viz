@@ -72,30 +72,38 @@ def process_ts_data(end_date):
     '''.format(end_date = end_date)
 
     ts_data = ap.presto(query)
-    ts_data['ds_night'] = ts_data['ds_night'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+    ts_data['ds_night'] = pd.to_datetime(ts_data.ds_night, format='%Y-%m-%d')
     ts_data.sort_values(['dim_location', 'ds_night'], inplace = True)
 
+    _events = _load_events()
+    events = pd.merge(ts_data, _events, on = ['dim_location', 'ds_night'])
+
     ts_sources = {}
+    ts_events = {}
     markets_list = ts_data.dim_location.unique().tolist()
 
     for market in markets_list:
         data_for_market = ts_data.loc[ts_data.dim_location == market, :]
         ts_sources[market] = ColumnDataSource(data_for_market)
+        events_for_market = events.loc[events.dim_location == market, :]
+        ts_events[market] = ColumnDataSource(events_for_market)
 
     ts_source = ts_sources.get('Los Angeles', None)
+    ts_event = ts_events.get('Los Angeles', None)
 
     print "Finished processing [ts data] ... "
 
-    return markets_list, ts_source, ts_sources
+    return markets_list, ts_event, ts_events, ts_source, ts_sources
 
-def load_events():
+def _load_events():
     events = pd.read_csv('events.csv')
     events['date'] = pd.to_datetime(events.date)
     events['date'] = events.date + pd.Timedelta(365, unit = 'd') # cheat for now
-    events.columns = ['idx', 'date', 'event', 'city']
-    events['y'] = 0.7
-    events.drop(['idx'], axis = 1, inplace = True)
-    return ColumnDataSource(events)
+    events.columns = ['idx', 'ds_night', 'event', 'dim_location']
+    events['year'] = events.ds_night.dt.year
+    events = events.loc[events.year == 2016, :]
+    events.drop(['idx', 'year'], axis = 1, inplace = True)
+    return events
 
 if __name__ == "__main__":
     print "[data.py] is being run independently"

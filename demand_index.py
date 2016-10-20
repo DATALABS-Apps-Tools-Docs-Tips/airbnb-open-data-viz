@@ -14,16 +14,15 @@ from bokeh.models.glyphs import Circle
 from bokeh.models.widgets import Slider, TextInput, Select, Button
 from bokeh.palettes import Viridis
 from os.path import dirname, join
-from data import process_map_data, process_ts_data, load_events
+from data import process_map_data, process_ts_data
 
 zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-10-10')
 
 START_IDX = zip_date_ranges[0][0]
 END_IDX = zip_date_ranges[-1][0]
 
-markets_list, ts_source, ts_sources = process_ts_data(end_date = '2016-10-20')
+markets_list, ts_event, ts_events, ts_source, ts_sources = process_ts_data(end_date = '2017-01-01')
 
-events = load_events()
 # --------------------------------- # 
 #         Map Configuration         #
 # --------------------------------- # 
@@ -102,7 +101,7 @@ ts_figure = figure(webgl = True, width = 1600, height = 400, x_axis_type = "date
 ts_figure.circle('ds_night', 'searches_index', color = 'navy', legend = 'Demand Index', source = ts_source)
 ts_figure.line('ds_night', 'searches_index', color = 'navy', legend = 'Demand Index', source = ts_source)
 
-labels = LabelSet(x='date', y='y', text='event', level='glyph', source=events)
+labels = LabelSet(x='ds_night', y='searches_index', text='event', level='glyph', source=ts_event)
 
 ts_hover = HoverTool(
             tooltips = [
@@ -121,6 +120,7 @@ market_selector = Select(title = "Market", value = "Los Angeles", options = mark
 def market_selector_update(attrname, old, new):
     market = market_selector.value
     ts_source.data = ts_sources[market].data
+    ts_event.data = ts_events[market].data
 
 market_selector.on_change('value', market_selector_update)
 
