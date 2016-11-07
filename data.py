@@ -71,11 +71,36 @@ def process_ts_data(end_date):
     ;
     '''.format(end_date = end_date)
 
+    query_top_cities = '''
+    SELECT
+        dim_location
+    FROM (
+        SELECT
+              dim_market AS dim_location
+            , COUNT(DISTINCT id_user) AS ct
+        FROM 
+            bnamih.hco_dim_hosts
+        WHERE
+            ds = '2016-10-01' AND
+            dim_market != '-unknown-' AND 
+            dim_market NOT LIKE '%Other%'
+        GROUP BY
+            dim_market
+        ORDER BY
+            ct DESC
+    ) LIMIT 100
+    '''
+
     ts_data = ap.presto(query)
     ts_data['ds_night'] = pd.to_datetime(ts_data.ds_night, format='%Y-%m-%d')
     ts_data.sort_values(['dim_location', 'ds_night'], inplace = True)
 
     _events = _load_events()
+
+    # Only display time series of the top cities
+    selective_dim_location = ap.presto(query_top_cities)
+    selective_dim_location = selective_dim_location.dim_location.tolist()
+    ts_data = ts_data.loc[ts_data.dim_location.isin(selective_dim_location), :]
     events = pd.merge(ts_data, _events, on = ['dim_location', 'ds_night'])
 
     ts_sources = {}
@@ -88,21 +113,22 @@ def process_ts_data(end_date):
         events_for_market = events.loc[events.dim_location == market, :]
         ts_events[market] = ColumnDataSource(events_for_market)
 
-    ts_source = ts_sources.get('Los Angeles', None)
-    ts_event = ts_events.get('Los Angeles', None)
+    ts_source = ts_sources.get('New York', None)
+    ts_event = ts_events.get('New York', None)
 
     print "Finished processing [ts data] ... "
 
     return markets_list, ts_event, ts_events, ts_source, ts_sources
 
 def _load_events():
-    events = pd.read_csv('events.csv')
+    events = pd.read_csv('./airbnb-open-data-viz/events.csv')
     events['date'] = pd.to_datetime(events.date)
     events['date'] = events.date + pd.Timedelta(365, unit = 'd') # cheat for now
     events.columns = ['idx', 'ds_night', 'event', 'dim_location']
     events['year'] = events.ds_night.dt.year
     events = events.loc[events.year == 2016, :]
     events.drop(['idx', 'year'], axis = 1, inplace = True)
+    
     return events
 
 if __name__ == "__main__":
