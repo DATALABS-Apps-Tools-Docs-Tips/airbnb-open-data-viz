@@ -32,7 +32,7 @@ def process_map_data(end_date):
     JOIN core_data.dim_country_groups dcg
     ON (dm.dim_country = dcg.dim_country)
     WHERE
-        dm.ds = '2016-10-01'
+        dm.ds = '2016-11-07'
     ;
     '''.format(end_date = end_date)
 
@@ -67,7 +67,7 @@ def process_ts_data(end_date):
     WHERE
         ds_night >= '2016-10-01' AND 
         ds_night <= '{end_date}' AND
-        ds = '2016-10-15'
+        ds = '2016-11-07'
     ;
     '''.format(end_date = end_date)
 
@@ -81,7 +81,7 @@ def process_ts_data(end_date):
         FROM 
             bnamih.hco_dim_hosts
         WHERE
-            ds = '2016-10-01' AND
+            ds = '2016-11-07' AND
             dim_market != '-unknown-' AND 
             dim_market NOT LIKE '%Other%'
         GROUP BY

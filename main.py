@@ -61,12 +61,11 @@ circles = Circle(x = "long",
                  line_color = None)
 plot.add_glyph(source, circles)
 
-label = Label(x = 0, y = 0, text= str(zip_date_ranges[0][1]), text_font_size = '70pt', text_color = '#eeeeee')
+label = Label(x = -100, y = -10, text= str(zip_date_ranges[0][1]), text_font_size = '70pt', text_color = '#FFDE8D')
 plot.add_layout(label)
 
 hover = HoverTool(
             tooltips = [
-                ("dim_location", "@dim_location"),
                 ("dim_market", "@dim_market"),
                 ("dim_country", "@dim_country_name"),
             ]
@@ -114,7 +113,7 @@ labels = LabelSet(x='ds_night', y='searches_index', text='event', level='glyph',
 
 ts_hover = HoverTool(
             tooltips = [
-                ("Check-in Date", "@ds_night"),
+                ("Check-in Date", "@ds_night{int}"),
             ]
         )
 ts_figure.add_layout(labels)
@@ -137,12 +136,14 @@ market_selector.on_change('value', market_selector_update)
 # --------------------------------- # 
 #            Final Layout           #
 # --------------------------------- #
-header = Div(text = open(join(dirname(__file__), "description.html")).read(), width = 1600)
+map_header = Div(text = open(join(dirname(__file__), "templates/map.html")).read(), width = 1600)
+ts_header = Div(text = open(join(dirname(__file__), "templates/timeseries.html")).read(), width = 1600)
 
 layout = layout([
-    [header],
-    [plot],
+    [map_header],
     [button],
+    [plot],
+    [ts_header],
     [market_selector],
     [ts_figure]
 ])
