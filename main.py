@@ -16,20 +16,22 @@ from bokeh.palettes import Viridis
 from os.path import dirname, join
 from data import process_map_data, process_ts_data
 
-# zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-10-10')
-# markets_list, ts_event, ts_events, ts_source, ts_sources = process_ts_data(end_date = '2017-12-31')
+zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-10-10')
+markets_list, ts_event, ts_events, ts_source, ts_sources = process_ts_data(end_date = '2017-12-31')
+START_IDX = zip_date_ranges[0][0]
+END_IDX = zip_date_ranges[-1][0]
 
-zip_date_ranges = curdoc().zip_date_ranges
-countries_list = curdoc().countries_list
-source = curdoc().source
-sources = curdoc().sources
-markets_list = curdoc().markets_list
-ts_event = curdoc().ts_event
-ts_events = curdoc().ts_events
-ts_source = curdoc().ts_source
-ts_sources = curdoc().ts_sources
-START_IDX = curdoc().zip_date_ranges[0][0]
-END_IDX = curdoc().zip_date_ranges[-1][0]
+# zip_date_ranges = curdoc().zip_date_ranges
+# countries_list = curdoc().countries_list
+# source = curdoc().source
+# sources = curdoc().sources
+# markets_list = curdoc().markets_list
+# ts_event = curdoc().ts_event
+# ts_events = curdoc().ts_events
+# ts_source = curdoc().ts_source
+# ts_sources = curdoc().ts_sources
+# START_IDX = curdoc().zip_date_ranges[0][0]
+# END_IDX = curdoc().zip_date_ranges[-1][0]
 
 
 # --------------------------------- # 
