@@ -1,7 +1,13 @@
 import numpy as np
-import airpy as ap
+# import airpy as ap
 import pandas as pd
 from bokeh.models import ColumnDataSource
+
+PATH_TO_DATA_DIR = './data/'
+PROCESS_MAP_DATA_FILE = PATH_TO_DATA_DIR + 'process_map_data.csv'
+PROCESS_TS_DATA_FILE = PATH_TO_DATA_DIR + 'process_ts_data.csv'
+SELECTIVE_DIM_LOCATION_FILE = PATH_TO_DATA_DIR + 'selective_dim_location.csv'
+EVENTS_FILE = PATH_TO_DATA_DIR + 'events.csv'
 
 def process_map_data(end_date):
     """The main function to query data for map viz"""
@@ -38,7 +44,7 @@ def process_map_data(end_date):
 
     # data = ap.presto(query)
     # data.to_csv('process_map_data.csv', encoding='utf8', index_label=False)
-    data = pd.read_csv('./airbnb-open-data-viz/data/process_map_data.csv')
+    data = pd.read_csv(PROCESS_MAP_DATA_FILE)
     
     data['searches'] = 100000 * data['searches']
 
@@ -82,7 +88,7 @@ def process_ts_data(end_date):
     # '''
     # selective_dim_location = ap.presto(query_top_cities)
     # selective_dim_location.to_csv('selective_dim_location.csv', encoding='utf8', index_label=False)
-    selective_dim_location = pd.read_csv('./airbnb-open-data-viz/data/selective_dim_location.csv')
+    selective_dim_location = pd.read_csv(SELECTIVE_DIM_LOCATION_FILE)
     selective_dim_location = selective_dim_location.dim_location.tolist()
 
     # query = '''
@@ -103,7 +109,7 @@ def process_ts_data(end_date):
     # ts_data.to_csv('process_ts_data.csv', encoding='utf8', index_label=False)
     
     # Only display time series of the top cities
-    ts_data = pd.read_csv('./airbnb-open-data-viz/data/process_ts_data.csv')
+    ts_data = pd.read_csv(PROCESS_TS_DATA_FILE)
     ts_data['ds_night'] = pd.to_datetime(ts_data.ds_night)
 
     _events = _load_events()
@@ -127,7 +133,7 @@ def process_ts_data(end_date):
     return markets_list, ts_event, ts_events, ts_source, ts_sources
 
 def _load_events():
-    events = pd.read_csv('./airbnb-open-data-viz/data/events.csv')
+    events = pd.read_csv(EVENTS_FILE)
     events['date'] = pd.to_datetime(events.date)
     events['date'] = events.date + pd.Timedelta(365, unit = 'd') # cheat for now
     events.columns = ['idx', 'ds_night', 'event', 'dim_location']
