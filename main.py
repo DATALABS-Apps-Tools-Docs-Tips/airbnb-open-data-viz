@@ -7,7 +7,7 @@ from bokeh.models import (ColumnDataSource, Label,
                           DataRange1d, Range1d,
                           HoverTool, Div,
                           PanTool, BoxZoomTool,
-                          WheelZoomTool, BoxSelectTool,
+                          WheelZoomTool, BoxSelectTool, ResetTool,
                           CategoricalColorMapper,
                           LabelSet)
 from bokeh.models.glyphs import Circle
@@ -70,7 +70,7 @@ hover = HoverTool(
                 ("dim_country", "@dim_country_name"),
             ]
         )
-plot.add_tools(PanTool(), WheelZoomTool(), hover, BoxZoomTool())
+plot.add_tools(PanTool(), WheelZoomTool(), hover, BoxZoomTool(), ResetTool())
 
 # --------------------------------- # 
 #     Map Animation Interaction     #
@@ -123,7 +123,7 @@ ts_figure.add_tools(ts_hover)
 # --------------------------------- # 
 #      Time Series Interaction      #
 # --------------------------------- #
-market_selector = Select(title = "Market", value = "New York", options = markets_list)
+market_selector = Select(title = "Market", value = "Milan", options = markets_list)
 
 def market_selector_update(attrname, old, new):
     market = market_selector.value
