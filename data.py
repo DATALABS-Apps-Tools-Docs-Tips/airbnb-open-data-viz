@@ -30,7 +30,7 @@ def process_map_data(end_date):
     # FROM 
     #     robert.local_demand_index 
     # WHERE
-    #     ds_night >= '2016-10-01' AND 
+    #     ds_night >= '2015-11-15' AND 
     #     ds_night <= '{end_date}'
     # ) ldi
     # JOIN core_data.dim_markets dm

@@ -5,7 +5,6 @@ SELECT
       demand_index.dim_location
     , nodes.center_lat AS lat
     , nodes.center_lng AS long
-    , nodes.dim_city AS dim_city
     , nodes.dim_market AS dim_market
     , demand_index.searches
     , demand_index.viewers
@@ -16,13 +15,15 @@ FROM (
     SELECT
         dim_location
       , ds_night
-      -- take the average index over the entire 120 lead days
+      -- take the average index over all possible lead days (180 max)
+      -- There is probably a better way to capture the average # of searches for a market
+      -- The issue is for farther ds_night, there are searches within closer lead days that are not observed yet
       , AVG(searches_index) AS searches
       , AVG(viewers_index) AS viewers
       , AVG(contacts_index) AS contacts
       , AVG(requests_index) AS requests
     FROM pricing.local_demand_index
-    WHERE ds_night >= '2016-10-03' AND ds_night <= '2017-10-04'
+    WHERE ds_night >= '2015-11-15' AND ds_night <= '2016-01-01'
     GROUP BY
           dim_location
         , ds_night
@@ -31,9 +32,9 @@ JOIN (
     SELECT DISTINCT
         node_id
       , dim_market
-      , dim_city
       , center_lat
       , center_lng
+-- why are their node with the exact same info, but different dim_city
 FROM pricing.kdtree_node_1k_market
 WHERE ds = '2016-07-31' AND
       model = '2016-07-20' AND

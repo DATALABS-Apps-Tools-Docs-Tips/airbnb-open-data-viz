@@ -16,7 +16,7 @@ from bokeh.palettes import Viridis
 from os.path import dirname, join
 from data import process_map_data, process_ts_data
 
-zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-10-10')
+zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-01-01')
 markets_list, ts_event, ts_events, ts_source, ts_sources = process_ts_data(end_date = '2017-12-31')
 START_IDX = zip_date_ranges[0][0]
 END_IDX = zip_date_ranges[-1][0]
