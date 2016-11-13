@@ -111,6 +111,7 @@ def process_ts_data(end_date):
     # Only display time series of the top cities
     ts_data = pd.read_csv(PROCESS_TS_DATA_FILE)
     ts_data['ds_night'] = pd.to_datetime(ts_data.ds_night)
+    ts_data['date'] = ts_data.ds_night.dt.strftime('%Y-%m-%d')
 
     _events = _load_events()
     events = pd.merge(ts_data, _events, on = ['dim_location', 'ds_night'])

@@ -115,7 +115,7 @@ labels = LabelSet(x='ds_night', y='searches_index', text='event', level='glyph',
 
 ts_hover = HoverTool(
             tooltips = [
-                ("Check-in Date", "@ds_night{int}"),
+                ("Check-in Date", "@date"),
             ]
         )
 ts_figure.add_layout(labels)
@@ -143,7 +143,7 @@ ts_header = Div(text = open(join(dirname(__file__), "templates/timeseries.html")
 
 layout = layout([
     [map_header],
-    [button],
+    [button], #slider],
     [plot],
     [ts_header],
     [market_selector],
