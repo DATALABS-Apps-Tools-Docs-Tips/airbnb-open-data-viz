@@ -16,7 +16,7 @@ from bokeh.palettes import Viridis
 from os.path import dirname, join
 from data import process_map_data, process_ts_data
 
-zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2016-01-01')
+zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2017-01-10')
 markets_list, ts_event, ts_events, ts_source, ts_sources = process_ts_data(end_date = '2017-12-31')
 START_IDX = zip_date_ranges[0][0]
 END_IDX = zip_date_ranges[-1][0]
@@ -44,7 +44,7 @@ API_KEY = 'AIzaSyCdiLtH-kS3uy_LfnW7d1sSak7zWxPbJn8'
 map_options = GMapOptions(lat = 0, lng = 0, map_type = "roadmap", zoom = 3, styles = STYLE)
 
 plot = GMapPlot(
-    webgl = True,
+    #webgl = True,
     x_range = Range1d(-180, 180), 
     y_range = Range1d(-90, 90), 
     map_options = map_options, 
