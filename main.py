@@ -58,7 +58,8 @@ color_mapper = CategoricalColorMapper(palette = palette, factors = countries_lis
 circles = Circle(x = "long", 
                  y = "lat", 
                  radius = "searches", 
-                 fill_color = {'field': 'dim_country_name', 'transform': color_mapper},
+                 # fill_color = {'field': 'dim_country_name', 'transform': color_mapper},
+                 fill_color = "colors",
                  fill_alpha = 0.8, 
                  line_color = None)
 plot.add_glyph(source, circles)
@@ -68,11 +69,11 @@ plot.add_layout(label)
 
 hover = HoverTool(
             tooltips = [
-                ("dim_market", "@dim_market"),
-                ("dim_country", "@dim_country_name"),
+                ("Market", "@dim_market"),
+                ("Country", "@dim_country_name"),
             ]
         )
-plot.add_tools(PanTool(), WheelZoomTool(), hover, BoxZoomTool(), ResetTool())
+plot.add_tools(PanTool(), WheelZoomTool(), hover)
 
 # --------------------------------- # 
 #     Map Animation Interaction     #

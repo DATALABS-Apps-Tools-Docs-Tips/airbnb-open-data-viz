@@ -2,6 +2,7 @@ import numpy as np
 # import airpy as ap
 import pandas as pd
 from bokeh.models import ColumnDataSource
+from bokeh.palettes import Viridis
 
 PATH_TO_DATA_DIR = './data/'
 PROCESS_MAP_DATA_FILE = PATH_TO_DATA_DIR + 'process_map_data.csv'
@@ -43,7 +44,10 @@ def process_map_data(end_date):
 
     data = pd.read_csv(PROCESS_MAP_DATA_FILE)
     
-    data['searches'] = 100000 * data['searches']
+    data['searches'] = 50000 * data['searches']
+    palette = Viridis.get(256, None)
+    data['colors_rk'] = pd.qcut(data.searches, q=np.linspace(0,1,257), labels=np.arange(0,256)).astype(int)
+    data['colors'] = [palette[255-c] for c in data.colors_rk]
 
     sources = {}
     date_ranges = data.ds_night.unique()
@@ -89,14 +93,25 @@ def process_ts_data(end_date):
     selective_dim_location = selective_dim_location.dim_location.tolist()
 
     # query = '''
+    # SELECT
+    #     *
+    # FROM
+    #     pricing.market_demand_index
+    # WHERE
+    #     ds_night >= '2016-01-01' AND
+    #     ds_night <= '2016-11-15' AND
+    #     lead_day = 0
+
+    # UNION
+
     # SELECT 
     #     * 
     # FROM 
     #     pricing.market_demand_index
     # WHERE
-    #     ds_night >= '2016-10-01' AND 
+    #     ds_night >= '2016-11-16' AND 
     #     ds_night <= '{end_date}' AND
-    #     ds = '2016-11-07'
+    #     ds = '2016-11-16'
     # ;
     # '''.format(end_date = end_date)
     # ts_data = ap.presto(query)
