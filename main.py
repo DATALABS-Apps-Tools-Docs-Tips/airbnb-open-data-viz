@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 from bokeh.io import curdoc
 from bokeh.layouts import layout, widgetbox
@@ -8,12 +9,14 @@ from bokeh.models import (ColumnDataSource, Label,
                           HoverTool, Div,
                           PanTool, BoxZoomTool,
                           WheelZoomTool, BoxSelectTool, ResetTool,
-                          CategoricalColorMapper,
-                          LabelSet)
+                          ColorBar,
+                          LabelSet, annotations)
+from bokeh.models.mappers import LinearColorMapper
 from bokeh.models.glyphs import Circle
 from bokeh.models.widgets import Slider, TextInput, Select, Button
-from bokeh.palettes import Viridis
+from bokeh.palettes import Viridis, Viridis10
 from os.path import dirname, join
+from datetime import datetime, timedelta
 from data import process_map_data, process_ts_data
 
 zip_date_ranges, countries_list, source, sources = process_map_data(end_date = '2017-01-10')
@@ -21,18 +24,9 @@ markets_list, ts_event, ts_events, ts_source, ts_sources = process_ts_data(end_d
 START_IDX = zip_date_ranges[0][0]
 END_IDX = zip_date_ranges[-1][0]
 
-# zip_date_ranges = curdoc().zip_date_ranges
-# countries_list = curdoc().countries_list
-# source = curdoc().source
-# sources = curdoc().sources
-# markets_list = curdoc().markets_list
-# ts_event = curdoc().ts_event
-# ts_events = curdoc().ts_events
-# ts_source = curdoc().ts_source
-# ts_sources = curdoc().ts_sources
-# START_IDX = curdoc().zip_date_ranges[0][0]
-# END_IDX = curdoc().zip_date_ranges[-1][0]
-
+def totimestamp(dt, epoch=datetime(1970,1,1)):
+  td = dt - epoch
+  return (td.microseconds + (td.seconds + td.days * 86400) * 10**6) / 10**6
 
 # --------------------------------- # 
 #         Map Configuration         #
@@ -52,13 +46,10 @@ plot = GMapPlot(
     plot_height = 1200,
     api_key = API_KEY,
 )
-palette = Viridis.get(256, None)
-palette = [palette[i] for i in np.random.randint(1, 256, 168)]
-color_mapper = CategoricalColorMapper(palette = palette, factors = countries_list)
+
 circles = Circle(x = "long", 
                  y = "lat", 
                  radius = "searches", 
-                 # fill_color = {'field': 'dim_country_name', 'transform': color_mapper},
                  fill_color = "colors",
                  fill_alpha = 0.8, 
                  line_color = None)
@@ -66,6 +57,13 @@ plot.add_glyph(source, circles)
 
 label = Label(x = -100, y = -10, text= str(zip_date_ranges[0][1]), text_font_size = '70pt', text_color = '#FFDE8D')
 plot.add_layout(label)
+
+color_mapper = LinearColorMapper(palette=['#FDE724','#B2DD2C','#6BCD59','#35B778','#1E9C89','#25828E','#30678D','#3E4989','#472777','#440154'],
+                                 low=int(min(source.data.get('searches'))/50000),
+                                 high=int(max(source.data.get('searches'))/50000))
+color_bar = ColorBar(color_mapper=color_mapper, orientation='horizontal',
+                     location='bottom_left', scale_alpha=0.7)
+plot.add_layout(color_bar)
 
 hover = HoverTool(
             tooltips = [
@@ -90,7 +88,7 @@ def slider_update(attrname, old, new):
     label.text = str(zip_date_ranges[date_ix][1])
     source.data = sources[date_ix].data
 
-slider = Slider(start = START_IDX, end = END_IDX, value = START_IDX, step = 1, title = "Date")
+slider = Slider(start = START_IDX, end = END_IDX, value = START_IDX, step = 1, title = "Number Of Days Forward")
 slider.on_change('value', slider_update)
 
 
@@ -108,8 +106,8 @@ button.on_click(animate)
 # --------------------------------- # 
 #     Time Series Configuration     #
 # --------------------------------- #
-ts_figure = figure(webgl = True, width = 1600, height = 400, x_axis_type = "datetime", title = "Demand Index")
-ts_figure.circle('ds_night', 'searches_index', color = 'navy', legend = 'Demand Index', source = ts_source)
+ts_figure = figure(webgl = True, width = 1600, height = 400, x_axis_type = "datetime")
+ts_figure.circle('ds_night', 'searches_index', size=2, color = 'navy', legend = 'Demand Index', source = ts_source)
 ts_figure.line('ds_night', 'searches_index', color = 'navy', legend = 'Demand Index', source = ts_source)
 
 labels = LabelSet(x='ds_night', y='searches_index', text='event', level='glyph', source=ts_event)
@@ -119,6 +117,16 @@ ts_hover = HoverTool(
                 ("Check-in Date", "@date"),
             ]
         )
+past_box = annotations.BoxAnnotation(left=totimestamp(datetime(2015,11,15))*1000,
+                                     right=totimestamp(datetime(2016,11,16))*1000,
+                                     fill_color='#9CA299', fill_alpha=0.1)
+
+future_box = annotations.BoxAnnotation(left=totimestamp(datetime(2016,11,16))*1000,
+                                     right=totimestamp(datetime(2017,06,15))*1000,
+                                     fill_color='#FFB400', fill_alpha=0.1)
+
+ts_figure.add_layout(past_box)
+ts_figure.add_layout(future_box)
 ts_figure.add_layout(labels)
 ts_figure.add_tools(ts_hover)
 
@@ -144,12 +152,13 @@ ts_header = Div(text = open(join(dirname(__file__), "templates/timeseries.html")
 
 layout = layout([
     [map_header],
-    [button], #slider],
+    [button, slider],
     [plot],
     [ts_header],
     [market_selector],
     [ts_figure]
-])
+],
+sizing_mode='scale_width')
 
 curdoc().add_root(layout)
 curdoc().title = "Demand Index"
